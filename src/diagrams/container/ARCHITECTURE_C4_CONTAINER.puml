@@ -1,0 +1,207 @@
+@startuml CinemaAbyss_C4_Container
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_LEFT_RIGHT()
+
+title CinemaAbyss - C4 Container Diagram
+
+Person(webUser, "Web User", "Browser-based access\nvia React SPA")
+Person(mobileUser, "Mobile User", "iOS / Android app")
+Person(tvUser, "Smart TV User", "Samsung / LG / Android TV")
+
+System_Boundary(cinemaabyss, "CinemaAbyss Platform") {
+    Container(bffWeb, "BFF Web", "Go, Port 8010", "Backend-for-Frontend for web\nOptimised responses for SPA:\nfull metadata, pagination,\nrich search results")
+
+    Container(bffMobile, "BFF Mobile", "Go, Port 8011", "Backend-for-Frontend for mobile\nOptimised responses for iOS/Android:\ncompact payloads, offline sync,\npush notification tokens")
+
+    Container(bffTv, "BFF Smart TV", "Go, Port 8012", "Backend-for-Frontend for Smart TV\nOptimised responses for TV UX:\nlarge-tile catalogs, D-pad navigation,\nlow-latency stream start")
+
+    Container(gateway, "API Gateway", "Go, Port 8000", "Internal entry point\nRouting, auth,\nrate limiting, logging")
+    
+    Container(userService, "User Service", "Go, PostgreSQL, Port 8080", "User registration,\nprofile management,\nauthentication,\nauthorization")
+    
+    Container(moviesService, "Movies Service", "Go, PostgreSQL, Port 8081", "Movie catalog,\nmetadata, ratings,\ngenres, search")
+    
+    Container(streamingService, "Streaming Service", "Go, PostgreSQL, Redis, Port 8082", "Viewing sessions,\nwatch history,\ncontinue watching,\nposition tracking")
+    
+    Container(billingService, "Billing Service", "Go, PostgreSQL, Port 8083", "Subscriptions,\npayments, invoices,\nplans, renewals")
+    
+    Container(notificationService, "Notification Service", "Go, PostgreSQL, Port 8084", "Email notifications,\nSMS, push,\nnotification templates")
+    
+    Container(analyticsService, "Analytics Service", "Go, Cassandra, Port 8085", "Event collection,\nmetrics, analytics,\nrecommendations,\nuser behavior")
+    
+    Container(eventBus, "Event Bus", "Apache Kafka, 10 topics", "Async communication\nbetween services\nevent pub/sub\nDLQ for failures")
+    
+    ' Databases - Database per Service Pattern
+    Container(userDb, "User Database", "PostgreSQL", "Users, profiles,\nauthentication,\nprofile preferences")
+    
+    Container(moviesDb, "Movies Database", "PostgreSQL", "Movie catalog,\nmetadata, ratings,\ngenres, reviews")
+    
+    Container(streamingDb, "Streaming Database", "PostgreSQL", "Viewing sessions,\nwatch history,\nuser positions")
+    
+    Container(billingDb, "Billing Database", "PostgreSQL", "Subscriptions,\npayments, invoices,\nplans, transactions")
+    
+    Container(notificationDb, "Notification Database", "PostgreSQL", "Notification logs,\ntemplates, delivery\nstatus tracking")
+    
+    Container(analyticsDb, "Analytics Database", "Cassandra Cluster", "Event collection,\ntime-series metrics,\nuser behavior,\nrecommendations")
+    
+    Container(cache, "Cache", "Redis Cluster", "Session store,\nuser preferences,\nmovie cache,\nrate limiting,\nshared across services")
+    
+    Container(searchEngine, "Search Engine", "ElasticSearch", "Full-text search\nfor movies,\nusers, content")
+    
+    Container(s3Storage, "Object Storage", "S3 (Yandex Cloud Object Storage)", "Movie video files,\nposter & backdrop images,\nuser avatars,\ninvoice PDFs,\nnotification attachments")
+    
+    Container(configMgmt, "Configuration", "ConfigMaps/Secrets", "Environment config,\nfeature flags,\nencrypted secrets")
+}
+
+System_Boundary(external, "External Systems") {
+    System(paymentGateway, "Payment Gateway", "YooKassa for processing payments")
+    System(emailService, "Email Service", "Yandex Cloud Email Service for sending emails")
+    System(smsService, "SMS Service", "Yandex Cloud Notification Service for SMS notifications")
+    System(pushService, "Push Service", "Firebase for push notifications")
+    System(cdn, "CDN", "Yandex Cloud CDN for video delivery")
+    System(externalRecommender, "External Recommendation System", "Third-party ML recommendation engine\nPublishes personalised recommendations\nvia Kafka topics")
+    System(kpOtt, "KinoPoisk HD", "Online cinema - provides licensed\ncontent catalog and streaming URLs")
+    System(okkoOtt, "Okko", "Online cinema - provides licensed\ncontent catalog and streaming URLs")
+    System(iviOtt, "IVI", "Online cinema - provides licensed\ncontent catalog and streaming URLs")
+}
+
+System_Boundary(monitoring, "Observability Stack") {
+    Container(prometheus, "Prometheus", "Metrics monitoring", "Time-series metrics collection")
+    Container(grafana, "Grafana", "Dashboards", "Metrics visualization")
+    Container(loki, "Loki", "Log aggregation", "Centralized logging")
+    Container(jaeger, "Jaeger", "Distributed tracing", "Request tracing across services")
+}
+
+System_Boundary(k8s, "Kubernetes Cluster") {
+    Container(serviceMesh, "Service Mesh", "Istio (Optional)", "Service-to-service communication,\nretries, circuit breaker,\nmutual TLS")
+    Container(helmCharts, "Helm Charts", "Infrastructure as Code", "Service deployment automation,\nversion management,\nenvironment templates")
+}
+
+' Relationships - Clients to BFFs
+Rel(webUser, bffWeb, "Uses", "HTTPS/REST")
+Rel(mobileUser, bffMobile, "Uses", "HTTPS/REST")
+Rel(tvUser, bffTv, "Uses", "HTTPS/REST")
+
+' Relationships - BFFs to API Gateway
+Rel(bffWeb, gateway, "Calls", "gRPC")
+Rel(bffMobile, gateway, "Calls", "gRPC")
+Rel(bffTv, gateway, "Calls", "gRPC")
+
+' Relationships - API Gateway to Services
+Rel(gateway, userService, "Routes", "gRPC/HTTP/REST")
+Rel(gateway, moviesService, "Routes", "gRPC/HTTP/REST")
+Rel(gateway, streamingService, "Routes", "gRPC/HTTP/REST")
+Rel(gateway, billingService, "Routes", "gRPC/HTTP/REST")
+Rel(gateway, analyticsService, "Routes", "gRPC/HTTP/REST")
+Rel(gateway, notificationService, "Routes", "gRPC/HTTP/REST")
+
+' Relationships - Services to Databases (Database per Service Pattern)
+Rel(userService, userDb, "Reads/Writes", "SQL")
+Rel(moviesService, moviesDb, "Reads/Writes", "SQL")
+Rel(streamingService, streamingDb, "Reads/Writes", "SQL")
+Rel(billingService, billingDb, "Reads/Writes", "SQL")
+Rel(notificationService, notificationDb, "Reads/Writes", "SQL")
+Rel(analyticsService, analyticsDb, "Writes events", "CQL")
+
+' Relationships - Services to Cache
+Rel(gateway, cache, "Reads/Writes", "Redis Protocol")
+Rel(userService, cache, "Reads/Writes", "Redis Protocol")
+Rel(moviesService, cache, "Reads/Writes", "Redis Protocol")
+Rel(streamingService, cache, "Reads/Writes", "Redis Protocol")
+Rel(billingService, cache, "Reads/Writes", "Redis Protocol")
+
+' Relationships - Services to Search
+Rel(moviesService, searchEngine, "Writes/Reads", "REST/Elasticsearch")
+
+' Relationships - Services to Event Bus
+Rel(userService, eventBus, "Publishes", "UserCreated,\nUserUpdated,\nUserDeleted")
+Rel(moviesService, eventBus, "Publishes", "MovieAdded,\nRatingAdded,\nMovieUpdated")
+Rel(streamingService, eventBus, "Publishes", "ViewingStarted,\nViewingCompleted,\nPositionUpdated")
+Rel(billingService, eventBus, "Publishes", "PaymentProcessed,\nSubscriptionCreated,\nInvoiceGenerated")
+
+' Relationships - Event Bus to Subscribers
+Rel(eventBus, notificationService, "Subscribes", "All domain events")
+Rel(eventBus, analyticsService, "Subscribes", "All domain events")
+Rel(eventBus, streamingService, "Subscribes", "User/Payment events")
+
+' Relationships - Configuration
+Rel(gateway, configMgmt, "Reads", "Feature flags,\nrouting rules")
+Rel(userService, configMgmt, "Reads", "Config")
+Rel(moviesService, configMgmt, "Reads", "Config")
+Rel(streamingService, configMgmt, "Reads", "Config")
+Rel(billingService, configMgmt, "Reads", "Config")
+
+' Relationships - External Online Cinemas (content providers)
+Rel(moviesService, kpOtt, "Fetches content catalog", "HTTPS/REST API")
+Rel(moviesService, okkoOtt, "Fetches content catalog", "HTTPS/REST API")
+Rel(moviesService, iviOtt, "Fetches content catalog", "HTTPS/REST API")
+Rel(streamingService, kpOtt, "Requests stream URL", "HTTPS/REST API")
+Rel(streamingService, okkoOtt, "Requests stream URL", "HTTPS/REST API")
+Rel(streamingService, iviOtt, "Requests stream URL", "HTTPS/REST API")
+
+' Relationships - External Recommendation System via Kafka
+Rel(analyticsService, externalRecommender, "Publishes user behavior", "Kafka: analytics.user-events")
+Rel(streamingService, externalRecommender, "Publishes viewing history", "Kafka: analytics.viewing-events")
+Rel(externalRecommender, analyticsService, "Publishes recommendations", "Kafka: recommendations.results")
+Rel(analyticsService, gateway, "Pushes recommendations", "gRPC")
+
+' Relationships - External Services
+Rel(billingService, paymentGateway, "Calls", "Charge card,\nprocess payment")
+Rel(notificationService, emailService, "Sends", "Email")
+Rel(notificationService, smsService, "Sends", "SMS")
+Rel(notificationService, pushService, "Sends", "Push notification")
+Rel(streamingService, cdn, "Retrieves", "Video streams")
+
+' Relationships - S3 Object Storage
+Rel(moviesService, s3Storage, "Uploads/Reads", "S3 API - posters,\nbackdrops, metadata files")
+Rel(streamingService, s3Storage, "Reads", "S3 API - video files")
+Rel(userService, s3Storage, "Uploads/Reads", "S3 API - user avatars")
+Rel(billingService, s3Storage, "Writes", "S3 API - invoice PDFs")
+Rel(s3Storage, cdn, "Origin source", "CDN pulls files from S3")
+
+' Relationships - Monitoring
+Rel(gateway, prometheus, "Sends metrics", "Prometheus format")
+Rel(userService, prometheus, "Sends metrics", "Prometheus format")
+Rel(moviesService, prometheus, "Sends metrics", "Prometheus format")
+Rel(streamingService, prometheus, "Sends metrics", "Prometheus format")
+Rel(billingService, prometheus, "Sends metrics", "Prometheus format")
+Rel(notificationService, prometheus, "Sends metrics", "Prometheus format")
+Rel(analyticsService, prometheus, "Sends metrics", "Prometheus format")
+
+Rel(prometheus, grafana, "Datasource", "PromQL")
+Rel(userService, loki, "Sends logs", "Loki protocol")
+Rel(moviesService, loki, "Sends logs", "Loki protocol")
+Rel(streamingService, loki, "Sends logs", "Loki protocol")
+Rel(billingService, loki, "Sends logs", "Loki protocol")
+Rel(notificationService, loki, "Sends logs", "Loki protocol")
+Rel(analyticsService, loki, "Sends logs", "Loki protocol")
+
+Rel(gateway, jaeger, "Sends traces", "OTEL")
+Rel(userService, jaeger, "Sends traces", "OTEL")
+Rel(moviesService, jaeger, "Sends traces", "OTEL")
+Rel(streamingService, jaeger, "Sends traces", "OTEL")
+Rel(billingService, jaeger, "Sends traces", "OTEL")
+Rel(notificationService, jaeger, "Sends traces", "OTEL")
+Rel(analyticsService, jaeger, "Sends traces", "OTEL")
+
+' Relationships - Kubernetes
+Rel(serviceMesh, userService, "Manages", "Service mesh")
+Rel(serviceMesh, moviesService, "Manages", "Service mesh")
+Rel(serviceMesh, streamingService, "Manages", "Service mesh")
+Rel(serviceMesh, billingService, "Manages", "Service mesh")
+Rel(serviceMesh, notificationService, "Manages", "Service mesh")
+Rel(serviceMesh, analyticsService, "Manages", "Service mesh")
+
+Rel(helmCharts, userService, "Deploys", "Helm")
+Rel(helmCharts, moviesService, "Deploys", "Helm")
+Rel(helmCharts, streamingService, "Deploys", "Helm")
+Rel(helmCharts, billingService, "Deploys", "Helm")
+Rel(helmCharts, notificationService, "Deploys", "Helm")
+Rel(helmCharts, analyticsService, "Deploys", "Helm")
+Rel(helmCharts, gateway, "Deploys", "Helm")
+
+SHOW_LEGEND()
+
+@enduml
