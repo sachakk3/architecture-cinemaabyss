@@ -60,6 +60,10 @@ proxy-service:
 Необходимые тесты для проверки этого API вызываются при запуске npm run test:local из папки tests/postman
 Приложите скриншот тестов и скриншот состояния топиков Kafka из UI http://localhost:8090
 
+<img src="docs/images/event_service_tests.jpg" alt="Скриншот тестов">
+
+<img src="docs/images/kafka_topics.jpg" alt="Скриншот топиков">
+
 # Задание 3
 
 Команда начала переезд в Kubernetes для лучшего масштабирования и повышения надежности.
