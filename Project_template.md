@@ -312,6 +312,10 @@ minikube tunnel
 
 Добавьте сюда скриншота вывода при вызове https://cinemaabyss.example.com/api/movies и скриншот вывода event-service после вызова тестов.
 
+<img src="docs/images/event_service_tests_kubernetes.jpg" alt="Скриншот вывода event-service после вызова тестов">
+
+<img src="docs/images/get_movies_kubernetes.jpg" alt="Скриншот вывода при вызове api/movies">
+
 # Задание 4
 
 Для простоты дальнейшего обновления и развертывания вам как архитектуру необходимо так же реализовать helm-чарты для прокси-сервиса и проверить работу

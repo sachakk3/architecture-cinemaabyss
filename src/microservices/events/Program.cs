@@ -12,8 +12,11 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
-    var builder = WebApplication.CreateBuilder(args);
+    Environment.SetEnvironmentVariable("DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE", "false");
 
+    var builder = WebApplication.CreateBuilder(args);
+    builder.Configuration.AddEnvironmentVariables();
+    
     builder.Host.UseSerilog((ctx, cfg) =>
         cfg.ReadFrom.Configuration(ctx.Configuration)
            .WriteTo.Console(outputTemplate:
