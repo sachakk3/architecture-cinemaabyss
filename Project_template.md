@@ -396,6 +396,10 @@ minikube tunnel
 https://cinemaabyss.example.com/api/movies
 и приложите скриншот развертывания helm и вывода https://cinemaabyss.example.com/api/movies
 
+<img src="docs/images/event_service_tests_kubernetes.jpg" alt="Скриншот вывода event-service после вызова тестов">
+
+<img src="docs/images/helm_deployment.jpg" alt="Скриншот деплоя через helm">
+
 ## Удаляем все
 
 ```bash
