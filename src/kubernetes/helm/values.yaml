@@ -5,7 +5,7 @@ global:
 
 # Image pull secrets
 imagePullSecrets:
-  dockerconfigjson: ewoJImF1dGhzIjogewoJCSJnaGNyLmlvIjogewoJCQkiYXV0aCI6
+  dockerconfigjson: ewoJImF1dGhzIjogewoJCSJnaGNyLmlvIjogewoJCQkiYXV0aCI6ICJjMkZqYUdGcmF6TTZaMmwwYUhWaVgzQmhkRjh4TVVGRFFVY3pNMEV3ZFhneWNrRkJNMkpYU21kM1gzWmhaV2R5UjNWMmVrWnRXRUpyZDJ0cE9GZFlWWFl5YW5kM1JtTTNVSHBIT0RkV1JFOUtOakpTUzJKWFIwMDJUa1pPUkhSSVptSkVVakkyIgoJCX0sCgkJInJlZ2lzdHJ5LWdpdC5oaWx0aS5jb20iOiB7CgkJCSJhdXRoIjogIlFXeGxlR0Z1WkdWeUxrdDFjSEpwYXpveldsUjVUalk0Y3pkb01tRktRMHRCY1V0blJBPT0iCgkJfQoJfQp9
 # Database configuration
 database:
   host: postgres
@@ -33,8 +33,8 @@ database:
 monolith:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/monolith
-    tag: latest
+    repository: ghcr.io/sachakk3/architecture-cinemaabyss/monolith
+    tag: sha-5492533
     pullPolicy: Always
   replicas: 1
   resources:
@@ -53,8 +53,8 @@ monolith:
 proxyService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/proxy-service
-    tag: latest
+    repository: ghcr.io/sachakk3/architecture-cinemaabyss/proxy-service
+    tag: sha-5492533
     pullPolicy: Always
   replicas: 1
   resources:
@@ -73,8 +73,8 @@ proxyService:
 moviesService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/movies-service
-    tag: latest
+    repository: ghcr.io/sachakk3/architecture-cinemaabyss/movies-service
+    tag: sha-5492533
     pullPolicy: Always
   replicas: 1
   resources:
@@ -93,8 +93,8 @@ moviesService:
 eventsService:
   enabled: true
   image:
-    repository: ghcr.io/db-exp/cinemaabysstest/events-service
-    tag: latest
+    repository: ghcr.io/sachakk3/architecture-cinemaabyss/events-service
+    tag: sha-5492533
     pullPolicy: Always
   replicas: 1
   resources:
@@ -112,6 +112,7 @@ eventsService:
 # Kafka configuration
 kafka:
   enabled: true
+  brokers: kafka:9092
   image:
     repository: wurstmeister/kafka
     tag: 2.13-2.7.0
